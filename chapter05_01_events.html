@@ -68,13 +68,14 @@
                 </div>
             </div>
 
-            <div id="messageContainer" class="row">
-                <div id="message" class="col-md-12 alert alert-info text-center" role="alert">
-                    Loading <code>samples.json</code> file...
-                </div>
-            </div>
+            <h2>Events, listeners and properties</h2>
 
-            <div id="samples-container" class="marketing"></div>
+            <p>Demonstrates the basics on how to work with properties on <code>ol.Object</code> instances and register listener functions.</p>
+
+            <div style="margin-top: 5px;" class="alert alert-success">Open the browser console to see the output produces by the code.</div>
+ 
+            <h4 class="text-muted">Source code:</h4>
+            <pre><code id="code_text" class="javascript"></code></pre>
 
             <div class="footer">
                 <p><a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/88x31.png" /></a><br /><span xmlns:dct="http://purl.org/dc/terms/" property="dct:title">Code samples for The Book of OpenLayers3</span> by <a xmlns:cc="http://creativecommons.org/ns#" href="https://github.com/acanimal/thebookofopenlayers3" property="cc:attributionName" rel="cc:attributionURL">Antonio Santiago</a>. Licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.</p>
@@ -90,10 +91,6 @@
         <!-- OpenLayers -->
         <script src="//openlayers.org/en/v3.4.0/build/ol.js" type="text/javascript"></script>
 
-        <!-- build:js({app,.tmp}) scripts/main.js -->
-        <script src="scripts/main.js"></script>
-        <!-- endbuild -->
-
         <!-- Google Analytics -->
         <script>
           (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
@@ -104,6 +101,101 @@
           ga('create', 'UA-46833410-2', 'auto');
           ga('send', 'pageview');
 
+        </script>
+
+        <script id="code">
+            // Create object setting properties
+            var obj = new ol.Object({
+                name: 'some value for property',
+                age: 32
+            });
+            obj.set('password', 123456);
+
+            // Print some info
+            console.log('I\'m an object with custom properties: ');
+            console.log(' > keys: ', obj.getKeys());
+            console.log(' > key/value: ', obj.getProperties());
+
+            // Register some listeners.
+            obj.on('beforepropertychange', function(evt) {
+                console.log('* Before property change event: ', evt.key);
+            });
+            obj.on('propertychange', function(evt) {
+                console.log('* Property change event: ', evt.key);
+            });
+
+            obj.on('change:name', function(evt) {
+                console.log('-> name changed to: ' + evt.target.get('name'));
+            });
+
+            obj.on('change:password', function(evt) {
+                console.log('-> password changed to: ' + evt.target.get('password'))
+            }); 
+
+            obj.once('change:age', function(evt) {
+                console.log('-> age changed to: ' + evt.target.get('age') + '. This will not be notified again.');
+            });
+
+            // Change some attributes
+            console.log('lets go to change the name property...');
+            obj.set('name', 'new name');
+
+            console.log('lets go to change the password property...');
+            obj.set('password', 000000);
+
+            console.log('lets go to change the age property...');
+            obj.set('age', 25);
+
+            console.log('lets go to change the age property again. Nothing must happen.');
+            obj.set('age', 35);
+
+            console.log('------------------------------------------------------------------------');
+
+            // Create two new instances
+            var john = new ol.Object({ 
+                name: 'John Smith'
+            });
+            var peter = new ol.Object({
+                name: 'Peter Smith'
+            }); 
+
+            // Define a binding for the 'age' property where john is always 
+            // 5 years greater than peter
+            var accessor = john.bindTo('age', peter);
+            accessor.transform(
+                function(sourceAge) {
+                    // Value from john to peter
+                    return sourceAge - 5;
+                },
+                function(targetAge) {
+                    // Value from peter to john
+                    return targetAge + 5;
+                }
+            );
+
+            // Make some changes
+            console.log('set john to 30...')
+            john.set('age', 30);
+            showAges();
+
+            console.log('set john to 40...')
+            john.set('age', 40);
+            showAges();
+
+            console.log('set peter to 40...')
+            peter.set('age', 40);
+            showAges();
+
+            function showAges() {
+                console.log('john(' + john.get('age') + ') - peter(' + peter.get('age') + ')');
+            }
+        </script>
+
+        <script>
+        	(function() {
+        		$('#code_text').text( $('#code').text() );
+            	hljs.initHighlightingOnLoad();
+        	})();
         </script>
 
     </body>

@@ -68,13 +68,21 @@
                 </div>
             </div>
 
-            <div id="messageContainer" class="row">
-                <div id="message" class="col-md-12 alert alert-info text-center" role="alert">
-                    Loading <code>samples.json</code> file...
-                </div>
+            <h2>Requesting a WFS server</h2>
+
+            <p>This example shows how we can query a WFS server.</p>
+
+            <p>The left map retrieves data in WFS format using normal AJAX requests (this is possible because server accepts cross domain requests). The right map retrieves data in GeoJSON format and using JSONP technique, which avoids same domain policy restriction.</p>
+
+            <p>Both maps uses a <code>ol.loadingstrategy.createTile</code> strategy queries vector data in a tiles like way.</p>
+
+            <div class="row">
+                <div id="map" class="map col-sm-6"></div>
+                <div id="mapJsonp" class="map col-sm-6"></div>
             </div>
 
-            <div id="samples-container" class="marketing"></div>
+            <h4 class="text-muted">Source code:</h4>
+            <pre><code id="code_text" class="javascript"></code></pre>
 
             <div class="footer">
                 <p><a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/88x31.png" /></a><br /><span xmlns:dct="http://purl.org/dc/terms/" property="dct:title">Code samples for The Book of OpenLayers3</span> by <a xmlns:cc="http://creativecommons.org/ns#" href="https://github.com/acanimal/thebookofopenlayers3" property="cc:attributionName" rel="cc:attributionURL">Antonio Santiago</a>. Licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.</p>
@@ -90,10 +98,6 @@
         <!-- OpenLayers -->
         <script src="//openlayers.org/en/v3.4.0/build/ol.js" type="text/javascript"></script>
 
-        <!-- build:js({app,.tmp}) scripts/main.js -->
-        <script src="scripts/main.js"></script>
-        <!-- endbuild -->
-
         <!-- Google Analytics -->
         <script>
           (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
@@ -104,6 +108,120 @@
           ga('create', 'UA-46833410-2', 'auto');
           ga('send', 'pageview');
 
+        </script>
+
+        <script id="code">
+            // Tiled layer
+            var osmLayer = new ol.layer.Tile({
+                source: new ol.source.OSM()
+            });
+
+            // Source retrieving WFS data in GML format using AJAX
+            var vectorSource = new ol.source.ServerVector({
+                format: new ol.format.WFS({
+                    featureNS: 'http://openstreemap.org',
+                    featureType: 'water_areas'
+                }),
+                loader: function(extent, resolution, projection) {
+                    var url = 'http://demo.opengeo.org/geoserver/wfs?'+
+                        'service=WFS&request=GetFeature&'+
+                        'version=1.1.0&typename=osm:water_areas&'+
+                        'srsname=EPSG:3857&'+
+                        'bbox=' + extent.join(',');
+
+                    $.ajax({
+                        url: url
+                    })
+                    .done(function(response) {
+                        vectorSource.addFeatures(vectorSource.readFeatures(response));
+                    });
+                },
+                strategy: ol.loadingstrategy.createTile(new ol.tilegrid.XYZ({
+                    maxZoom: 19
+                })),
+                projection: 'EPSG:3857'
+            });
+
+            // Vector layer
+            var vectorLayer = new ol.layer.Vector({
+                source: vectorSource,
+                style: new ol.style.Style({
+                    stroke: new ol.style.Stroke({
+                        color: 'green',
+                        width: 2
+                    })
+                })
+            });
+
+            // Map
+            var map = new ol.Map({
+                target: 'map',
+                renderer: 'canvas',
+                layers: [osmLayer, vectorLayer],
+                view: new ol.View({
+                    center: ol.proj.transform([-75.923853, 45.428736], 'EPSG:4326', 'EPSG:3857'),
+                    maxZoom: 19,
+                    zoom: 11
+                })
+            });
+
+            // Source retrieving WFS data in GeoJSON format using JSONP technique
+            var vectorSourceJsonp = new ol.source.ServerVector({
+                format: new ol.format.GeoJSON(),
+                loader: function(extent, resolution, projection) {
+                    var url = 'http://demo.opengeo.org/geoserver/wfs?'+
+                        'service=WFS&request=GetFeature&'+
+                        'version=1.1.0&typename=osm:water_areas&'+
+                        'outputFormat=text/javascript&'+
+                        'format_options=callback:loadFeatures&' +
+                        'srsname=EPSG:3857&'+
+                        'bbox=' + extent.join(',');
+
+                    $.ajax({
+                        url: url,
+                        dataType: 'jsonp'
+                    });
+                },
+                strategy: ol.loadingstrategy.createTile(new ol.tilegrid.XYZ({
+                    maxZoom: 19
+                })),
+                projection: 'EPSG:3857'
+            });
+
+            // Executed when data is loaded by the $.ajax method.
+            var loadFeatures = function(response) {
+                vectorSourceJsonp.addFeatures(vectorSourceJsonp.readFeatures(response));
+            };
+
+            // Vector layer
+            var vectorLayerJsonp = new ol.layer.Vector({
+                source: vectorSourceJsonp,
+                style: new ol.style.Style({
+                    stroke: new ol.style.Stroke({
+                        color: 'green',
+                        width: 2
+                    })
+                })
+            });
+
+            // Map
+            var mapJsonp = new ol.Map({
+                target: 'mapJsonp',
+                renderer: 'canvas',
+                layers: [osmLayer, vectorLayerJsonp],
+                view: new ol.View({
+                    center: ol.proj.transform([-75.923853, 45.428736], 'EPSG:4326', 'EPSG:3857'),
+                    maxZoom: 19,
+                    zoom: 11
+                })
+            });
+        </script>
+
+        <script>
+        	(function() {
+        		$('#code_text').text( $('#code').text() );
+            	hljs.initHighlightingOnLoad();
+        	})();
         </script>
 
     </body>

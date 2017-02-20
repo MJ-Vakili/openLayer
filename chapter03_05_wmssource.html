@@ -68,13 +68,17 @@
                 </div>
             </div>
 
-            <div id="messageContainer" class="row">
-                <div id="message" class="col-md-12 alert alert-info text-center" role="alert">
-                    Loading <code>samples.json</code> file...
-                </div>
+            <h2>Loading data from a WMS server </h2>
+
+            <p>This sample demonstrates how we can request raster data on a WMS server. The map on the left request data as a <em>single image</em> for the whole view extent. The map on the right works as a pyramid of tiles.</p>
+
+            <div class="row">
+                <div id="mapImage" class="map col-sm-6"></div>
+                <div id="mapTiles" class="map col-sm-6"></div>
             </div>
 
-            <div id="samples-container" class="marketing"></div>
+            <h4 class="text-muted">Source code:</h4>
+            <pre><code id="code_text" class="javascript"></code></pre>
 
             <div class="footer">
                 <p><a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/88x31.png" /></a><br /><span xmlns:dct="http://purl.org/dc/terms/" property="dct:title">Code samples for The Book of OpenLayers3</span> by <a xmlns:cc="http://creativecommons.org/ns#" href="https://github.com/acanimal/thebookofopenlayers3" property="cc:attributionName" rel="cc:attributionURL">Antonio Santiago</a>. Licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.</p>
@@ -90,10 +94,6 @@
         <!-- OpenLayers -->
         <script src="//openlayers.org/en/v3.4.0/build/ol.js" type="text/javascript"></script>
 
-        <!-- build:js({app,.tmp}) scripts/main.js -->
-        <script src="scripts/main.js"></script>
-        <!-- endbuild -->
-
         <!-- Google Analytics -->
         <script>
           (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
@@ -104,6 +104,64 @@
           ga('create', 'UA-46833410-2', 'auto');
           ga('send', 'pageview');
 
+        </script>
+
+        <script id="code">
+            var mapImage = new ol.Map({
+                target: 'mapImage',  // The DOM element that will contains the map
+                renderer: 'canvas', // Force the renderer to be used
+                layers: [
+                    new ol.layer.Tile({
+                        source: new ol.source.OSM()
+                    }),
+                    new ol.layer.Image({
+                        source: new ol.source.ImageWMS({
+                            url: 'http://www.idee.es/wms/MTN-Raster/MTN-Raster',
+                            ratio: 1,
+                            params: {
+                                'LAYERS': 'mtn_rasterizado',
+                                'TRANSPARENT': 'true'
+                            }
+                        })
+                    })
+                ],
+                // Create a view centered on the specified location and zoom level
+                view: new ol.View({
+                    center: ol.proj.transform([2.1833, 41.3833], 'EPSG:4326', 'EPSG:3857'),
+                    zoom: 6
+                })
+            });
+
+            var mapTiles = new ol.Map({
+                target: 'mapTiles',  // The DOM element that will contains the map
+                renderer: 'canvas', // Force the renderer to be used
+                layers: [
+                    new ol.layer.Tile({
+                        source: new ol.source.OSM()
+                    }),
+                    new ol.layer.Tile({
+                        source: new ol.source.TileWMS({
+                            url: 'http://www.idee.es/wms/MTN-Raster/MTN-Raster',
+                            params: {
+                                'LAYERS': 'mtn_rasterizado',
+                                'TRANSPARENT': 'true'
+                            }
+                        })
+                    })
+                ],
+                // Create a view centered on the specified location and zoom level
+                view: new ol.View({
+                    center: ol.proj.transform([2.1833, 41.3833], 'EPSG:4326', 'EPSG:3857'),
+                    zoom: 6
+                })
+            });
+        </script>
+
+        <script>
+        	(function() {
+        		$('#code_text').text( $('#code').text() );
+            	hljs.initHighlightingOnLoad();
+        	})();
         </script>
 
     </body>

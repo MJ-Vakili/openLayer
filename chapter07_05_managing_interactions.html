@@ -23,6 +23,12 @@
 
         <!-- OpenLayers -->
         <link rel="stylesheet" href="//openlayers.org/en/v3.4.0/css/ol.css" type="text/css">
+        
+        <style>
+            .toggle {
+                width: 100px;
+            }
+        </style>
     </head>
     <body>
         <!--[if lt IE 10]>
@@ -67,14 +73,33 @@
                     New 3.5.0 version introduces some <a href="https://github.com/openlayers/ol3/blob/master/changelog/upgrade-notes.md#v350">API changes</a> not backwards compatible.
                 </div>
             </div>
+ 
+            <h2>Managing interactions</h2>
 
-            <div id="messageContainer" class="row">
-                <div id="message" class="col-md-12 alert alert-info text-center" role="alert">
-                    Loading <code>samples.json</code> file...
-                </div>
-            </div>
+            <p>This recipe shows how we can add or remove interactions to the map.</p> 
 
-            <div id="samples-container" class="marketing"></div>
+            <input type="checkbox" checked data-size="mini" data-toggle="toggle" data-on="DoubleClickZoom" data-off="DoubleClickZoom">
+
+            <input type="checkbox" checked data-size="mini" data-toggle="toggle" data-on="KeyboardPan" data-off="KeyboardPan">
+
+            <input type="checkbox" checked data-size="mini" data-toggle="toggle" data-on="KeyboardZoom" data-off="KeyboardZoom">
+
+            <input type="checkbox" checked data-size="mini" data-toggle="toggle" data-on="MouseWheelZoom" data-off="MouseWheelZoom">
+
+            <input type="checkbox" checked data-size="mini" data-toggle="toggle" data-on="PinchRotate" data-off="PinchRotate">
+
+            <input type="checkbox" checked data-size="mini" data-toggle="toggle" data-on="PinchZoom" data-off="PinchZoom">
+
+            <input type="checkbox" checked data-size="mini" data-toggle="toggle" data-on="DragPan" data-off="DragPan">
+
+            <input type="checkbox" checked data-size="mini" data-toggle="toggle" data-on="DragZoom" data-off="DragZoom">
+
+            <input type="checkbox" checked data-size="mini" data-toggle="toggle" data-on="DragRotate" data-off="DragRotate">
+
+            <div id="map" class="map"></div>
+
+            <h4 class="text-muted">Source code:</h4>
+            <pre><code id="code_text" class="javascript"></code></pre>
 
             <div class="footer">
                 <p><a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/88x31.png" /></a><br /><span xmlns:dct="http://purl.org/dc/terms/" property="dct:title">Code samples for The Book of OpenLayers3</span> by <a xmlns:cc="http://creativecommons.org/ns#" href="https://github.com/acanimal/thebookofopenlayers3" property="cc:attributionName" rel="cc:attributionURL">Antonio Santiago</a>. Licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.</p>
@@ -90,10 +115,6 @@
         <!-- OpenLayers -->
         <script src="//openlayers.org/en/v3.4.0/build/ol.js" type="text/javascript"></script>
 
-        <!-- build:js({app,.tmp}) scripts/main.js -->
-        <script src="scripts/main.js"></script>
-        <!-- endbuild -->
-
         <!-- Google Analytics -->
         <script>
           (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
@@ -104,6 +125,74 @@
           ga('create', 'UA-46833410-2', 'auto');
           ga('send', 'pageview');
 
+        </script>
+
+        <script id="code">
+            var duration = 400;
+
+            // Create interactions array
+            var interactions = [                
+                new ol.interaction.DoubleClickZoom({
+                    duration: duration
+                }),
+                new ol.interaction.KeyboardPan({
+                    pixelDelta: 256
+                }),
+                new ol.interaction.KeyboardZoom({
+                    duration: duration
+                }),
+                new ol.interaction.MouseWheelZoom({
+                    duration: duration
+                }),
+                new ol.interaction.PinchRotate(),
+                new ol.interaction.PinchZoom({
+                    duration: duration
+                }),
+                new ol.interaction.DragPan({
+                    kinetic: new ol.Kinetic(-0.01, 0.1, 200)
+                }),
+                new ol.interaction.DragZoom(),
+                new ol.interaction.DragRotate(),
+            ];
+
+            // Initialize map
+            var map = new ol.Map({
+                target: 'map',
+                renderer: 'canvas',
+                interactions: [interactions],
+                layers: [
+                    new ol.layer.Tile({
+                        source: new ol.source.MapQuest({
+                            layer: 'osm'
+                        })
+                    })
+                ],
+                view: new ol.View({
+                    center: ol.proj.transform([2.1833, 42.3833], 'EPSG:4326', 'EPSG:3857'),
+                    zoom: 7
+                })
+            });
+ 
+            // Listen for changes on chekcboxes once document was ready
+            $(document).ready(function(){
+                $('input').on('change', function(event) {
+                    var index = $('input').index(event.target);
+                    var checked = $(event.target).is(':checked');
+
+                    if(checked) {
+                        map.addInteraction(interactions[index]);
+                    } else {
+                        map.removeInteraction(interactions[index]);
+                    }
+                });
+            });
+        </script>
+
+        <script>
+        	(function() {
+        		$('#code_text').text( $('#code').text() );
+            	hljs.initHighlightingOnLoad();
+        	})();
         </script>
 
     </body>
