@@ -10,7 +10,7 @@
 
         <!-- build:css styles/vendor.css -->
         <!-- bower:css -->
-         <link rel="stylesheet" href="styles/b0d5f35e.vendor.css"/>
+         <link rel="stylesheet" href="styles/vendor.css"/>
         <!-- endbower -->
         <!-- endbuild -->
 
@@ -22,7 +22,7 @@
         <!-- endbuild -->
 
         <!-- OpenLayers -->
-        <link rel="stylesheet" href="//openlayers.org/en/v4.0.1/css/ol.css" type="text/css">
+        <link rel="stylesheet" href="styles/ol.css" type="text/css">
     </head>
     <body>
         <!--[if lt IE 10]>
@@ -91,7 +91,7 @@
                 <script src="scripts/plugins.js"></script>
 
         <!-- OpenLayers -->
-        <script src="//openlayers.org/en/v3.4.0/build/ol.js" type="text/javascript"></script>
+        <script src="scripts/ol-debug.js" type="text/javascript"></script>
 
         <!-- Google Analytics -->
         <script>
@@ -108,15 +108,17 @@
         <script id="code">
             // Vector layer from a GeoJson file url
             var gjsonFile = new ol.layer.Vector({
-                source: new ol.source.GeoJSON({
+                source: new ol.source.Vector({
                     url: 'data/world_cities.json',
-                    projection: 'EPSG:3857'
+                    projection: 'EPSG:3857',
+                    format: new ol.format.GeoJSON()
                 }) 
             });
 
             // Vector layer from a geojson object
             var gjsonObject = new ol.layer.Vector({
-                source: new ol.source.GeoJSON({
+                source: new ol.source.Vector({
+                    format: new ol.format.GeoJSON(),
                     object: {
                         'type': 'Feature',
                         'geometry': {
@@ -129,8 +131,9 @@
 
             // Vector layer from a geojson string
             var gjsonString = new ol.layer.Vector({
-                source: new ol.source.GeoJSON({
-                    text: '{"type":"Feature","geometry":{"type":"Polygon","coordinates":[[[-5000000,-1000000],[-4000000,1000000],[-3000000,-1000000]]]}}'
+                source: new ol.source.Vector({
+                    text: '{"type":"Feature","geometry":{"type":"Polygon","coordinates":[[[-5000000,-1000000],[-4000000,1000000],[-3000000,-1000000]]]}}',
+                    format: new ol.format.GeoJSON()
                 })
             });
 
@@ -138,9 +141,10 @@
             // We will get an error similar to: 
             //   XMLHttpRequest cannot load http://ol3js.org/en/master/examples/data/topojson/world-110m.json. No 'Access-Control-Allow-Origin' header is present on the requested resource. Origin 'http://localhost:9000' is therefore not allowed access.
             var topoJson = new ol.layer.Vector({
-                source: new ol.source.TopoJSON({
+                source: new ol.source.Vector({
                     projection: 'EPSG:3857',
-                    url: 'http://ol3js.org/en/master/examples/data/topojson/world-110m.json'
+                    url: 'https://openlayers.org/en/v4.0.1/examples/data/topojson/world-110m.json',
+                    format: new ol.format.TopoJSON()
                 })
             });
 
